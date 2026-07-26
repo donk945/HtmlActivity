@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 第一组：可单选的一组菜单项 -->
+    <group android:checkableBehavior="single">
+
+        <!-- 收件箱菜单项 -->
+        <item
+            android:id="@+id/inboxFragment"
+            android:icon="@android:drawable/ic_dialog_email"
+            android:title="Inbox"/>
+
+        <!-- 已发送菜单项 -->
+        <item
+            android:id="@+id/sentItemsFragment"
+            android:icon="@android:drawable/ic_menu_send"
+            android:title="Sent Items"/>
+    </group>
+
+    <!-- 第二项：包含子菜单的标题 -->
+    <item android:title="Support">
+        <!-- 子菜单 -->
+        <menu>
+            <!-- 帮助菜单项 -->
+            <item
+                android:id="@+id/helpFragment"
+                android:icon="@android:drawable/ic_menu_help"
+                android:title="Help"/>
+        </menu>
+    </item>
+
+</menu>

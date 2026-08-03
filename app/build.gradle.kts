@@ -62,4 +62,8 @@ dependencies {
 
     //recyclerview
     implementation("androidx.recyclerview:recyclerview:1.3.2")
+
+    // ViewModel + repeatOnLifecycle (explicit, though transitively available)
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
 }

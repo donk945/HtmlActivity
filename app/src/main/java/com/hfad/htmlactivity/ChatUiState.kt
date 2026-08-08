@@ -6,5 +6,7 @@ package com.hfad.htmlactivity
 data class ChatUiState(
     val messages: List<Message> = emptyList(),
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val intentType: IntentType? = null,    // 当前消息的意图类型
+    val htmlContent: String? = null         // HTML_GENERATE 时携带的 HTML 代码
 )

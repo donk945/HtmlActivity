@@ -9,6 +9,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.hfad.htmlactivity.databinding.FragmentFirstBinding
 import kotlinx.coroutines.launch
@@ -49,8 +50,11 @@ class FirstFragment : Fragment() {
 
         // 观察 ViewModel 的 UI 状态
         viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {//repeatOnLifecycle(STARTED) — 在 Fragment 可见时收集 StateFlow，不可见时自动取消，避免后台泄漏
                 viewModel.uiState.collect { state ->
+                    // 防止 Fragment 销毁后异步回调访问 null binding
+                    val binding = _binding ?: return@collect
+
                     // 提交消息列表，DiffUtil 自动处理增量更新
                     chatAdapter.submitList(state.messages) {
                         // 列表提交后滚动到底部
@@ -60,6 +64,19 @@ class FirstFragment : Fragment() {
                     }
                     // 加载中禁用发送按钮
                     binding.btnSend.isEnabled = !state.isLoading
+
+                    // 检测到 HTML_GENERATE 意图 → 导航到 WebView
+                    if (state.intentType == IntentType.HTML_GENERATE && state.htmlContent != null) {
+                        val htmlContent = state.htmlContent!!
+                        viewModel.onHtmlConsumed() // 先清除 intentType 避免重复导航
+                        val bundle = Bundle().apply {
+                            putString("htmlContent", htmlContent)
+                        }
+                        findNavController().navigate(
+                            R.id.action_firstFragment_to_htmlDisplayFragment,
+                            bundle
+                        )
+                    }
                 }
             }
         }

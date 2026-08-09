@@ -1,6 +1,7 @@
 package com.hfad.htmlactivity
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -8,12 +9,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-/**
- * 聊天页面的 ViewModel
- * 持有 UI 状态（StateFlow<ChatUiState>），管理聊天历史，调用 Repository
- * 新增意图识别：先本地关键词匹配分类，再路由到 CHAT 或 HTML_GENERATE 分支
- */
-class ChatViewModel : ViewModel() {
+class ChatViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = ChatRepository()
 
@@ -22,6 +18,13 @@ class ChatViewModel : ViewModel() {
 
     private val _uiState = MutableStateFlow(ChatUiState())
     val uiState: StateFlow<ChatUiState> = _uiState.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            val messages = repository.loadMessages(getApplication())
+            _uiState.update { it.copy(messages = messages) }
+        }
+    }
 
     /**
      * 发送用户消息，先做意图分类再路由到不同分支
@@ -79,6 +82,7 @@ class ChatViewModel : ViewModel() {
                         intentType = IntentType.CHAT
                     )
                 }
+                repository.saveMessages(getApplication(), _uiState.value.messages)
             },
             onFailure = { e ->
                 _uiState.update { state ->
@@ -105,7 +109,6 @@ class ChatViewModel : ViewModel() {
 
         result.fold(
             onSuccess = { htmlCode ->
-                // 提取 HTML 代码（去除可能的 markdown 包裹）
                 val cleanHtml = extractHtml(htmlCode)
 
                 _uiState.update { state ->
@@ -120,6 +123,7 @@ class ChatViewModel : ViewModel() {
                         htmlContent = cleanHtml
                     )
                 }
+                repository.saveMessages(getApplication(), _uiState.value.messages)
             },
             onFailure = { e ->
                 _uiState.update { state ->
@@ -142,6 +146,17 @@ class ChatViewModel : ViewModel() {
      */
     fun onHtmlConsumed() {
         _uiState.update { it.copy(intentType = null, htmlContent = null) }
+    }
+
+    /**
+     * 清空所有对话（UI + 持久化存储 + 历史上下文）
+     */
+    fun clearConversation() {
+        historyList.clear()
+        _uiState.update { it.copy(messages = emptyList()) }
+        viewModelScope.launch {
+            repository.clearMessages(getApplication())
+        }
     }
 
     /**

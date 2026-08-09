@@ -39,6 +39,11 @@ class FirstFragment : Fragment() {
             adapter = chatAdapter
         }
 
+        // 清空对话按钮
+        binding.btnClear.setOnClickListener {
+            viewModel.clearConversation()
+        }
+
         // 点击发送按钮 → 委托给 ViewModel
         binding.btnSend.setOnClickListener {
             val userInput = binding.etInput.text.toString().trim()

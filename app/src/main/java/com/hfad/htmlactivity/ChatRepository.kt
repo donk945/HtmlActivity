@@ -1,5 +1,8 @@
 package com.hfad.htmlactivity
 
+import android.content.Context
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
@@ -8,6 +11,7 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.File
 import java.util.concurrent.TimeUnit
 
 /**
@@ -21,6 +25,8 @@ class ChatRepository {
         .readTimeout(60, TimeUnit.SECONDS)
         .writeTimeout(30, TimeUnit.SECONDS)
         .build()
+
+    private val gson = Gson()
 
     /**
      * CHAT 分支：纯文字对话
@@ -151,6 +157,35 @@ class ChatRepository {
         } catch (e: Exception) {
             Result.failure(e)
         }
+    }
+
+    private fun getMessagesFile(context: Context): File =
+        File(context.filesDir, "chat_messages.json")
+
+    suspend fun loadMessages(context: Context): List<Message> = withContext(Dispatchers.IO) {
+        try {
+            val file = getMessagesFile(context)
+            if (!file.exists()) return@withContext emptyList()
+            val json = file.readText()
+            val type = object : TypeToken<List<Message>>() {}.type
+            val messages: List<Message> = gson.fromJson(json, type)
+            messages
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    suspend fun saveMessages(context: Context, messages: List<Message>) = withContext(Dispatchers.IO) {
+        try {
+            val json = gson.toJson(messages)
+            getMessagesFile(context).writeText(json)
+        } catch (_: Exception) { }
+    }
+
+    suspend fun clearMessages(context: Context) = withContext(Dispatchers.IO) {
+        try {
+            getMessagesFile(context).delete()
+        } catch (_: Exception) { }
     }
 
     companion object {

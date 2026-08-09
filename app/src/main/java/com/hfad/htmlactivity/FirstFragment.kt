@@ -1,9 +1,12 @@
 package com.hfad.htmlactivity
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -21,6 +24,35 @@ class FirstFragment : Fragment() {
 
     private val viewModel: ChatViewModel by viewModels()
     private val chatAdapter = ChatAdapter()
+
+    // VLM 分支：当前预览中的图片
+    private var previewBitmap: Bitmap? = null
+
+    // 拍照
+    private val takePictureLauncher = registerForActivityResult(
+        ActivityResultContracts.TakePicturePreview()
+    ) { bitmap ->
+        bitmap?.let { onImagePicked(it) }
+    }
+
+    // 相册选图
+    private val pickImageLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let {
+            val inputStream = requireContext().contentResolver.openInputStream(it)
+            val bitmap = BitmapFactory.decodeStream(inputStream)
+            inputStream?.close()
+            bitmap?.let { b -> onImagePicked(b) }
+        }
+    }
+
+    private fun onImagePicked(bitmap: Bitmap) {
+        previewBitmap = bitmap
+        binding.ivImagePreview.setImageBitmap(bitmap)
+        binding.ivImagePreview.visibility = View.VISIBLE
+        viewModel.attachImage(bitmap)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -44,12 +76,34 @@ class FirstFragment : Fragment() {
             viewModel.clearConversation()
         }
 
+        // 拍照按钮
+        binding.btnCamera.setOnClickListener {
+            takePictureLauncher.launch(null)
+        }
+
+        // 相册选图按钮
+        binding.btnGallery.setOnClickListener {
+            pickImageLauncher.launch("image/*")
+        }
+
+        // 点击预览图取消选中
+        binding.ivImagePreview.setOnClickListener {
+            previewBitmap = null
+            binding.ivImagePreview.setImageBitmap(null)
+            binding.ivImagePreview.visibility = View.GONE
+            viewModel.clearPendingImage()
+        }
+
         // 点击发送按钮 → 委托给 ViewModel
         binding.btnSend.setOnClickListener {
             val userInput = binding.etInput.text.toString().trim()
-            if (userInput.isNotEmpty()) {
-                binding.etInput.text.clear() //清空输入框
-                viewModel.sendMessage(userInput)  //委托给viewmodel
+            val hasImage = previewBitmap != null
+            if (userInput.isNotEmpty() || hasImage) {
+                binding.etInput.text.clear()
+                previewBitmap = null
+                binding.ivImagePreview.setImageBitmap(null)
+                binding.ivImagePreview.visibility = View.GONE
+                viewModel.sendMessage(userInput.ifBlank { "请描述这张图片" })
             }
         }
 
@@ -81,6 +135,13 @@ class FirstFragment : Fragment() {
                             R.id.action_firstFragment_to_htmlDisplayFragment,
                             bundle
                         )
+                    }
+
+                    // 图片已被 ViewModel 消费 → 同步隐藏预览
+                    if (!state.hasPendingImage && previewBitmap != null) {
+                        previewBitmap = null
+                        binding.ivImagePreview.setImageBitmap(null)
+                        binding.ivImagePreview.visibility = View.GONE
                     }
                 }
             }

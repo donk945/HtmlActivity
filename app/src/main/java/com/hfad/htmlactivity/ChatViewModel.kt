@@ -1,13 +1,16 @@
 package com.hfad.htmlactivity
 
 import android.app.Application
+import android.graphics.Bitmap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class ChatViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -15,6 +18,9 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
 
     // 聊天历史记录，用于多轮对话上下文
     private val historyList = mutableListOf<Pair<String, String>>()
+
+    // VLM 分支：用户附带的待识别图片
+    private var pendingImageBitmap: Bitmap? = null
 
     private val _uiState = MutableStateFlow(ChatUiState())
     val uiState: StateFlow<ChatUiState> = _uiState.asStateFlow()
@@ -27,11 +33,23 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
+     * VLM 分支：用户附件图片，供 Fragment 在拍照/选图后调用
+     */
+    fun attachImage(bitmap: Bitmap) {
+        pendingImageBitmap = bitmap
+        _uiState.update { it.copy(hasPendingImage = true) }
+    }
+
+    fun clearPendingImage() {
+        pendingImageBitmap = null
+        _uiState.update { it.copy(hasPendingImage = false) }
+    }
+
+    /**
      * 发送用户消息，先做意图分类再路由到不同分支
-     * 分类策略：本地关键词匹配 → 未命中则 AI 兜底分类 → 仍失败则默认 CHAT
+     * 分类策略：有未处理图片 → VLM_VISION，否则本地关键词匹配 → 未命中则 AI 兜底 → 仍失败默认 CHAT
      */
     fun sendMessage(userInput: String) {
-        // 追加用户消息 + 加载占位消息
         val userMessage = Message(content = userInput, isUser = true)
         val loadingMessage = Message(content = "正在思考...", isUser = false)
 
@@ -44,18 +62,17 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         viewModelScope.launch {
-            // 第一层：本地关键词匹配
-            val keywordIntent = classifyIntent(userInput)
-            val intent = if (keywordIntent != null) {
-                keywordIntent
+            val intent = if (pendingImageBitmap != null) {
+                IntentType.VLM_VISION
             } else {
-                // 第二层：AI 兜底分类
-                classifyIntentByAi(userInput)
+                val keywordIntent = classifyIntent(userInput)
+                keywordIntent ?: classifyIntentByAi(userInput)
             }
 
             when (intent) {
                 IntentType.CHAT -> handleChat(userInput)
                 IntentType.HTML_GENERATE -> handleHtmlGenerate(userInput)
+                IntentType.VLM_VISION -> handleVlmVision(userInput)
             }
         }
     }
@@ -142,6 +159,69 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
+     * VLM_VISION 分支：图片 → Base64 → 多模态 API → 返回识别结果
+     */
+    private suspend fun handleVlmVision(userInput: String) {
+        val bitmap = pendingImageBitmap
+        if (bitmap == null) {
+            _uiState.update { state ->
+                val updated = state.messages.toMutableList().apply {
+                    removeAt(size - 1)
+                    add(Message(content = "请先选择一张图片", isUser = false))
+                }
+                state.copy(messages = updated, isLoading = false)
+            }
+            return
+        }
+
+        val prompt = userInput.ifBlank { "请描述这张图片" }
+
+        val imageBase64 = withContext(Dispatchers.IO) {
+            ImageHelper.bitmapToBase64(bitmap)
+        }
+
+        val result = repository.sendVlmRequest(imageBase64, prompt)
+
+        // 无论成功还是失败都清除待处理图片
+        pendingImageBitmap = null
+
+        result.fold(
+            onSuccess = { aiResponse ->
+                historyList.add("user" to prompt)
+                historyList.add("assistant" to aiResponse)
+
+                _uiState.update { state ->
+                    val updated = state.messages.toMutableList().apply {
+                        removeAt(size - 1)
+                        add(Message(content = aiResponse, isUser = false))
+                    }
+                    state.copy(
+                        messages = updated,
+                        isLoading = false,
+                        intentType = IntentType.VLM_VISION,
+                        hasPendingImage = false
+                    )
+                }
+                repository.saveMessages(getApplication(), _uiState.value.messages)
+            },
+            onFailure = { e ->
+                _uiState.update { state ->
+                    val updated = state.messages.toMutableList().apply {
+                        removeAt(size - 1)
+                        add(Message(content = "图片识别失败: ${e.message}", isUser = false))
+                    }
+                    state.copy(
+                        messages = updated,
+                        isLoading = false,
+                        error = e.message,
+                        hasPendingImage = false
+                    )
+                }
+            }
+        )
+    }
+
+    /**
      * Fragment 导航到 WebView 后调用，清除 intentType 避免重复导航
      */
     fun onHtmlConsumed() {
@@ -172,10 +252,14 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
             "图片", "图像", "画", "绘制",
             "代码", "前端"
         )
-        return if (htmlKeywords.any { userInput.contains(it) }) {
-            IntentType.HTML_GENERATE
-        } else {
-            null  // 本地无法判断，交给 AI 兜底
+        val vlmKeywords = listOf(
+            "识别图片", "识别图像", "识别这张", "图片里", "图中",
+            "看图", "这是什么图", "照片里", "图片是什么"
+        )
+        return when {
+            htmlKeywords.any { userInput.contains(it) } -> IntentType.HTML_GENERATE
+            vlmKeywords.any { userInput.contains(it) } -> IntentType.VLM_VISION
+            else -> null
         }
     }
 
@@ -190,11 +274,11 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
             onSuccess = { aiOutput ->
                 when {
                     aiOutput.contains("HTML_GENERATE") -> IntentType.HTML_GENERATE
+                    aiOutput.contains("VLM_VISION") -> IntentType.VLM_VISION
                     else -> IntentType.CHAT
                 }
             },
             onFailure = {
-                // AI 分类失败，默认走聊天
                 IntentType.CHAT
             }
         )

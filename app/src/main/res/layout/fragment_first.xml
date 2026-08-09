@@ -11,6 +11,14 @@
         android:layout_weight="1"
         android:padding="8dp" />
 
+    <ImageView
+        android:id="@+id/ivImagePreview"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:scaleType="centerCrop"
+        android:layout_margin="8dp"
+        android:visibility="gone" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -22,6 +30,22 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="清空"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_marginEnd="2dp" />
+
+        <Button
+            android:id="@+id/btnCamera"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="拍照"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_marginEnd="2dp" />
+
+        <Button
+            android:id="@+id/btnGallery"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="相册"
             style="@style/Widget.Material3.Button.TextButton"
             android:layout_marginEnd="4dp" />
 

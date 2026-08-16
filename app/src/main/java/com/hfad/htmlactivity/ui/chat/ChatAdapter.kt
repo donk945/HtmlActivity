@@ -1,4 +1,4 @@
-package com.hfad.htmlactivity
+package com.hfad.htmlactivity.ui.chat
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -7,11 +7,12 @@ import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.hfad.htmlactivity.R
+import com.hfad.htmlactivity.data.model.Message
 import com.hfad.htmlactivity.databinding.ItemMessageBinding
 
 /**
  * 聊天消息的 RecyclerView 适配器
- * 使用 ListAdapter + DiffUtil 实现高效增量更新和动画
  */
 class ChatAdapter : ListAdapter<Message, ChatAdapter.ViewHolder>(DiffCallback) {
 
@@ -33,13 +34,11 @@ class ChatAdapter : ListAdapter<Message, ChatAdapter.ViewHolder>(DiffCallback) {
             binding.tvMessage.text = message.content
 
             if (message.isUser) {
-                // 用户消息：蓝色气泡，靠右
                 binding.bubbleLayout.setBackgroundResource(R.drawable.bubble_user)
                 binding.bubbleLayout.updateLayoutParams<FrameLayout.LayoutParams> {
                     gravity = android.view.Gravity.END
                 }
             } else {
-                // AI 消息：灰色气泡，靠左
                 binding.bubbleLayout.setBackgroundResource(R.drawable.bubble_ai)
                 binding.bubbleLayout.updateLayoutParams<FrameLayout.LayoutParams> {
                     gravity = android.view.Gravity.START

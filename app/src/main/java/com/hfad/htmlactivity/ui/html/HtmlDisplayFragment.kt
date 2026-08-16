@@ -1,4 +1,4 @@
-package com.hfad.htmlactivity
+package com.hfad.htmlactivity.ui.html
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -11,7 +11,6 @@ import com.hfad.htmlactivity.databinding.FragmentHtmlDisplayBinding
 
 /**
  * WebView Fragment：渲染 AI 生成的 HTML 页面
- * 支持后续扩展 JavaScript Interface 调用原生硬件
  */
 class HtmlDisplayFragment : Fragment() {
 
@@ -57,7 +56,6 @@ class HtmlDisplayFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        // 防止 WebView 内存泄漏
         binding.webView.destroy()
         _binding = null
     }

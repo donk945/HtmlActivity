@@ -1,6 +1,16 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+}
+
+// 从 local.properties 读取 PocketBase 服务器地址（不提交进 git）
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) {
+        file.inputStream().use { load(it) }
+    }
 }
 
 android {
@@ -15,6 +25,13 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // PocketBase 服务器地址，从 local.properties 的 pocketbase.url 注入
+        buildConfigField(
+            "String",
+            "POCKETBASE_URL",
+            "\"${localProperties.getProperty("pocketbase.url", "")}\""
+        )
     }
 
     buildTypes {
@@ -28,6 +45,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -57,6 +75,13 @@ dependencies {
 
     // Gson
     implementation("com.google.code.gson:gson:2.10.1")
+
+    // Retrofit（PocketBase REST）
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
+    // DataStore（登录态持久化）
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
 
     implementation("androidx.cardview:cardview:1.0.0")
 

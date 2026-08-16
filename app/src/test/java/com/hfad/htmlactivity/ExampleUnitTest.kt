@@ -5,9 +5,9 @@ import org.junit.Test
 import org.junit.Assert.*
 
 /**
- * Example local unit test, which will execute on the development machine (host).
+ * 本地单元测试示例，运行在开发机（宿主）上。
  *
- * See [testing documentation](http://d.android.com/tools/testing).
+ * 参见 [测试文档](http://d.android.com/tools/testing)。
  */
 class ExampleUnitTest {
     @Test

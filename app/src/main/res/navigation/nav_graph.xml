@@ -3,25 +3,60 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/firstFragment">
+    app:startDestination="@id/loginFragment">
 
     <fragment
-        android:id="@+id/firstFragment"
-        android:name="com.hfad.htmlactivity.FirstFragment"
-        android:label="fragment_first"
-        tools:layout="@layout/fragment_first">
-
+        android:id="@+id/loginFragment"
+        android:name="com.hfad.htmlactivity.ui.auth.LoginFragment"
+        android:label="登录"
+        tools:layout="@layout/fragment_login">
         <action
-            android:id="@+id/action_firstFragment_to_htmlDisplayFragment"
-            app:destination="@id/htmlDisplayFragment" />
+            android:id="@+id/action_loginFragment_to_registerFragment"
+            app:destination="@id/registerFragment" />
+        <action
+            android:id="@+id/action_loginFragment_to_chatFragment"
+            app:destination="@id/chatFragment" />
     </fragment>
 
     <fragment
-        android:id="@+id/htmlDisplayFragment"
-        android:name="com.hfad.htmlactivity.HtmlDisplayFragment"
-        android:label="fragment_html_display"
-        tools:layout="@layout/fragment_html_display">
+        android:id="@+id/registerFragment"
+        android:name="com.hfad.htmlactivity.ui.auth.RegisterFragment"
+        android:label="注册"
+        tools:layout="@layout/fragment_register" />
 
+    <fragment
+        android:id="@+id/chatFragment"
+        android:name="com.hfad.htmlactivity.ui.chat.ChatFragment"
+        android:label="聊天"
+        tools:layout="@layout/fragment_chat">
+        <action
+            android:id="@+id/action_chatFragment_to_htmlDisplayFragment"
+            app:destination="@id/htmlDisplayFragment" />
+        <action
+            android:id="@+id/action_chatFragment_to_conversationListFragment"
+            app:destination="@id/conversationListFragment" />
+        <action
+            android:id="@+id/action_chatFragment_to_settingsFragment"
+            app:destination="@id/settingsFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/conversationListFragment"
+        android:name="com.hfad.htmlactivity.ui.chat.ConversationListFragment"
+        android:label="会话"
+        tools:layout="@layout/fragment_conversation_list" />
+
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.hfad.htmlactivity.ui.settings.SettingsFragment"
+        android:label="设置"
+        tools:layout="@layout/fragment_settings" />
+
+    <fragment
+        android:id="@+id/htmlDisplayFragment"
+        android:name="com.hfad.htmlactivity.ui.html.HtmlDisplayFragment"
+        android:label="页面预览"
+        tools:layout="@layout/fragment_html_display">
         <argument
             android:name="htmlContent"
             app:argType="string"

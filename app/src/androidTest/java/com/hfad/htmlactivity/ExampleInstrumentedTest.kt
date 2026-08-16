@@ -9,15 +9,15 @@ import org.junit.runner.RunWith
 import org.junit.Assert.*
 
 /**
- * Instrumented test, which will execute on an Android device.
+ * 仪器化测试，运行在 Android 设备上。
  *
- * See [testing documentation](http://d.android.com/tools/testing).
+ * 参见 [测试文档](http://d.android.com/tools/testing)。
  */
 @RunWith(AndroidJUnit4::class)
 class ExampleInstrumentedTest {
     @Test
     fun useAppContext() {
-        // Context of the app under test.
+        // 被测应用的 Context。
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         assertEquals("com.hfad.htmlactivity", appContext.packageName)
     }

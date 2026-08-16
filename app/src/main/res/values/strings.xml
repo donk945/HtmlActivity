@@ -1,5 +1,5 @@
 <resources>
     <string name="app_name">HtmlActivity</string>
-    <!-- TODO: Remove or change this placeholder text -->
+    <!-- TODO: 移除或修改此占位文本 -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

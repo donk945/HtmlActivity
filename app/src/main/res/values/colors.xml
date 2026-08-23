@@ -1,5 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
+    <!-- 基础色 -->
     <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+
+    <!-- 主题主色（白色系） -->
+    <color name="primary">#FFFFFFFF</color>
+    <color name="on_primary">#FF000000</color>
+    <color name="primary_container">#FFF5F5F5</color>
+    <color name="on_primary_container">#FF000000</color>
+
+    <!-- 表面 / 背景 / 卡片 -->
+    <color name="surface">#FFFFFFFF</color>
+    <color name="on_surface">#FF000000</color>
+    <color name="surface_variant">#FFF5F5F5</color>
+    <color name="on_surface_variant">#FF666666</color>
+    <color name="outline">#FFBDBDBD</color>
+
+    <!-- 文字 -->
+    <color name="text_primary">#FF000000</color>
+    <color name="text_secondary">#FF666666</color>
+    <color name="text_button">#FF000000</color>
 </resources>

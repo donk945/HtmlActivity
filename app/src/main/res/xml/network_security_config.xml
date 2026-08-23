@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-    <!-- 仅允许这台 PocketBase 服务器走明文 HTTP，其余仍强制 HTTPS -->
+    <!-- 模拟器访问宿主机：10.0.2.2 固定指向电脑的 127.0.0.1 -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">10.0.2.2</domain>
+    </domain-config>
+
+    <!-- 团队服务器 -->
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="false">139.196.180.58</domain>
     </domain-config>

@@ -19,6 +19,11 @@ import retrofit2.http.Query
  */
 interface PocketBaseApi {
 
+    // ---- 健康检查 ----
+
+    @GET("api/health")
+    suspend fun healthCheck(): Map<String, Any>
+
     // ---- 认证 ----
 
     @POST("api/collections/users/auth-with-password")

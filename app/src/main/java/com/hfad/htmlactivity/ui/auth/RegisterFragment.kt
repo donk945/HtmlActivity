@@ -35,7 +35,8 @@ class RegisterFragment : Fragment() {
             viewModel.register(
                 binding.etEmail.text.toString(),
                 binding.etPassword.text.toString(),
-                binding.etConfirm.text.toString()
+                binding.etConfirm.text.toString(),
+                binding.etName.text.toString()
             )
         }
 

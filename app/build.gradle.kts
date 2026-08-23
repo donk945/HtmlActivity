@@ -1,16 +1,6 @@
-import java.util.Properties
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-}
-
-// 从 local.properties 读取 PocketBase 服务器地址（不提交进 git）
-val localProperties = Properties().apply {
-    val file = rootProject.file("local.properties")
-    if (file.exists()) {
-        file.inputStream().use { load(it) }
-    }
 }
 
 android {
@@ -25,13 +15,6 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
-        // PocketBase 服务器地址，从 local.properties 的 pocketbase.url 注入
-        buildConfigField(
-            "String",
-            "POCKETBASE_URL",
-            "\"${localProperties.getProperty("pocketbase.url", "")}\""
-        )
     }
 
     buildTypes {

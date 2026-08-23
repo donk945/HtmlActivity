@@ -78,6 +78,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:text="退出登录"
+            android:textColor="@color/text_button"
+            app:strokeColor="@color/outline"
             style="@style/Widget.Material3.Button.OutlinedButton" />
 
     </LinearLayout>

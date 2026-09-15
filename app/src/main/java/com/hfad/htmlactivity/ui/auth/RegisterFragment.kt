@@ -31,6 +31,11 @@ class RegisterFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // 左上角返回
+        binding.toolbarRegister.setNavigationOnClickListener {
+            findNavController().navigateUp()
+        }
+
         binding.btnRegister.setOnClickListener {
             viewModel.register(
                 binding.etEmail.text.toString(),

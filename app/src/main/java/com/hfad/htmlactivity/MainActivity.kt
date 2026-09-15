@@ -3,6 +3,9 @@ package com.hfad.htmlactivity
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavOptions
@@ -31,6 +34,8 @@ class MainActivity : AppCompatActivity() {
 
         val navView = findViewById<NavigationView>(R.id.nav_view)
         val drawer = findViewById<DrawerLayout>(R.id.drawer_layout)
+
+        applyDrawerTopInset(drawer, navView)
 
         lifecycleScope.launch {
             app.sessionManager.restore()
@@ -81,6 +86,18 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * 抽屉内容状态栏高度顶部内边距
+     */
+    private fun applyDrawerTopInset(drawer: DrawerLayout, navView: NavigationView) {
+        val basePaddingTop = navView.paddingTop
+        ViewCompat.setOnApplyWindowInsetsListener(drawer) { _, insets ->
+            val topInset = insets.getInsets(WindowInsetsCompat.Type.systemBars()).top
+            navView.updatePadding(top = basePaddingTop + topInset)
+            insets
         }
     }
 }

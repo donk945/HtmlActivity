@@ -9,11 +9,11 @@
         android:id="@+id/toolbarHtml"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
-        android:navigationIcon="?attr/homeAsUpIndicator"
+        app:navigationIcon="@drawable/ic_arrow_back"
         app:navigationContentDescription="返回"
+        app:navigationIconTint="@color/on_surface"
         app:title="页面预览"
-        style="@style/Widget.MaterialComponents.Toolbar.Primary" />
+        style="@style/Widget.Material3.Toolbar.Surface" />
 
     <WebView
         android:id="@+id/webView"
